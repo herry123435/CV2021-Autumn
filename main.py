@@ -25,7 +25,7 @@ class BodyParts(Enum):
 
 # 선영님/현수님
 # 옷을 입은 사람 이미지에서 segmentation을 통해 각 부위만 남긴 이미지 9장, 
-# 옷을 입은 사람 이미지에서 나온 39개의 꼭지점, 사람 이미지에서 나온 39개의 꼭지점을 반환
+# 옷을 입은 사람 이미지에서 나온 39개의 꼭지점과 15개의 관절, 사람 이미지에서 나온 39개의 꼭지점과 15개의 관절을 반환
 #
 # input: 
 #   clothesOnHumanImg: numpy.ndarray (cv2.imread만 한 상태, RGB 순서, size: M1*N1*3)
@@ -33,22 +33,26 @@ class BodyParts(Enum):
 # output: (순서대로)
 #   segImgs: list[9] (BodyParts(Enum)에 명시된 순서로 해당 부위만 남기고 나머지는 배경처리한 옷 이미지의 배열. 각 element가 M1*N1*4 size (alpha채널 추가)) 
 #   clothesPoints: list[39][2] (옷에서 추출한 꼭지점들, (x, y) 순서) 
+#   clothesJoints: list[15][2] (옷(을 입은 사람)에서 추출한 관절들) 
 #   posePoints: list[39][2] (사람에서 추출한 꼭지점들)
+#   poseJoints: list[15][2] (사람에서 추출한 관절들) 
 def imageToSegAndPoints(clothesOnHumanImg, humanImg):
-    return None, None, None
+    return None, None, None, None, None
 
 # 민재님
 # 옷을 입은 사람 이미지에서 나온 꼭지점과 사람 이미지에서 나온 꼭지점 간의 대응 관계를 찾아내어 순서대로 정리하여 반환
 # 
 # input:
 #   clothesPoints: list[39][2] (옷에서 추출한 꼭지점들) 
+#   clothesJoints: list[15][2] (옷(을 입은 사람)에서 추출한 관절들) 
 #   posePoints: list[39][2] (사람에서 추출한 꼭지점들) 
+#   poseJoints: list[15][2] (사람에서 추출한 관절들) 
 # output: (순서대로)
 #   orderedClothesPoints: list[39][2] (대응 순서에 맞게 정리한 옷에서 추출한 꼭지점들. 
 #                                       여기서도 BodyParts(Enum)의 순서에 맞게 해주셨으면 합니다! 
 #                                       맨 처음이 몸통 7개, 그 다음이 오른쪽 상완 4개, ... 이렇게요. ) 
 #   orderedPosePoints: list[39][2] (대응 순서에 맞게 정리한 사람에서 추출한 꼭지점들) 
-def findMatchings(clothesPoints, posePoints):
+def findMatchings(clothesPoints, clothesJoints, posePoints, poseJoints):
     return None, None
 
 # 경서
@@ -58,10 +62,12 @@ def findMatchings(clothesPoints, posePoints):
 #   segImgs: list[9] (BodyParts(Enum) 순서)
 #   humanImg: numpy.ndarray (RGB 순서, size: M2*N2*3)
 #   orderedClothesPoints: list[39][2] (대응 순서에 맞게 정리한 옷에서 추출한 꼭지점들) 
+#   clothesJoints: list[15][2] (옷(을 입은 사람)에서 추출한 관절들) 
 #   orderedPosePoints: list[39][2] (대응 순서에 맞게 정리한 사람에서 추출한 꼭지점들) 
+#   poseJoints: list[15][2] (사람에서 추출한 관절들) 
 # output:
 #   clothesTriedOn: numpy.ndarray (최종 결과물, RGB 순서, size: M2*M2*3)
-def warpClothesSegs(segImgs, humanImg, orderedClothesPoints, orderedPostPoints):
+def warpClothesSegs(segImgs, humanImg, orderedClothesPoints, clothesJoints, orderedPosePoints, poseJoints):
     return np.zeros((1280, 1280, 3))
 
 if __name__ == '__main__' :
@@ -77,13 +83,13 @@ if __name__ == '__main__' :
     humanImg = cv2.cvtColor(cv2.imread(os.path.join(humanDir, humanSrc), cv2.IMREAD_COLOR), cv2.COLOR_BGR2RGB)
 
     # Task 1: 선영/현수
-    segImgs, clothesPoints, posePoints = imageToSegAndPoints(clothesOnHumanImg, humanImg)
+    segImgs, clothesPoints, clothesJoints, posePoints, poseJoints = imageToSegAndPoints(clothesOnHumanImg, humanImg)
 
     # Task 2: 민재
-    orderedClothesPoints, orderedPostPoints = findMatchings(clothesPoints, posePoints)
+    orderedClothesPoints, orderedPostPoints = findMatchings(clothesPoints, clothesJoints, posePoints, poseJoints)
 
     # Task 3: 경서
-    clothesTriedOn = warpClothesSegs(segImgs, humanImg, orderedClothesPoints, orderedPostPoints)
+    clothesTriedOn = warpClothesSegs(segImgs, humanImg, orderedClothesPoints, clothesJoints, orderedPostPoints, poseJoints)
 
     # show result
     plt.subplot(1, 3, 1), plt.imshow(clothesOnHumanImg)
