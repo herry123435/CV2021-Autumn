@@ -24,7 +24,7 @@ def warpClothesSegs(segImgs, humanImg, ordered_clothes_points, ordered_pose_poin
 
     for i in range(total_parts_num):
         # get each clothes segment
-        clothes_seg = segImgs[i]
+        clothes_seg = segImgs[i].astype(np.uint8)
         M1, N1 = clothes_seg.shape[::2]
 
         # resize it to size of pose image
