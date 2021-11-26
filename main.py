@@ -10,6 +10,7 @@ import os
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+from jointDetection import *
 
 # Body parts order
 class BodyParts(Enum):
@@ -75,8 +76,8 @@ if __name__ == '__main__' :
     humanDir = 'humanInput'
 
     # get Input
-    clothesOnHumanSrc = 'clothesInput.jpeg'
-    humanSrc = 'humanInput.jpeg'
+    clothesOnHumanSrc = 'manWithSweater.jpeg' #'clothesInput.jpeg'
+    humanSrc = 'humanPose01.jpeg'#'humanInput.jpeg'
 
     # read image
     clothesOnHumanImg = cv2.cvtColor(cv2.imread(os.path.join(clothesDir, clothesOnHumanSrc), cv2.IMREAD_COLOR), cv2.COLOR_BGR2RGB)
@@ -84,6 +85,12 @@ if __name__ == '__main__' :
 
     # Task 1: 선영/현수
     segImgs, clothesPoints, clothesJoints, posePoints, poseJoints = imageToSegAndPoints(clothesOnHumanImg, humanImg)
+
+    # Task 1-1: 선영
+    clothesJoints = detectJoint(clothesOnHumanImg)
+    #print(clothesJoints)
+    poseJoints = detectJoint(humanImg)
+    #print(poseJoints)
 
     # Task 2: 민재
     orderedClothesPoints, orderedPostPoints = findMatchings(clothesPoints, clothesJoints, posePoints, poseJoints)
