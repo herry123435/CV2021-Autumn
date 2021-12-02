@@ -123,7 +123,7 @@ def parseMan(img, corners, contours, hulls):
     return parts
 
 
-def parseImage(img):
+def parseImage(img, woman):
     print(img.shape)
 
     # 1. Get contour
@@ -131,9 +131,12 @@ def parseImage(img):
     smoothedImg = cv2.imread("results/contour.jpg")
     validHull, validContours = utils.getConvexHull(smoothedImg, contours, hierarchy)
     corners = utils.getCorners('results/contour.jpg')
+
     # parseBody(img, corners, validContours, validHull)
-    parts = parseMan(img, corners, validContours, validHull)
-    # parts = parseWoman(img, corners, validContours, validHull)
+    if not woman:
+        parts = parseMan(img, corners, validContours, validHull)
+    else:
+        parts = parseWoman(img, corners, validContours, validHull)
 
     return parts
 
@@ -151,8 +154,11 @@ def parseImage(img):
 #   posePoints: list[39][2] (사람에서 추출한 꼭지점들)
 #   poseJoints: list[15][2] (사람에서 추출한 관절들)
 def imageToSegAndPoints(clothesImg, humanImg):
-    posePoints = parseImage(humanImg)
-    utils.segmentation(humanImg, posePoints)
+    posePoints = parseImage(clothesImg, woman)
+    utils.segmentation(clothesImg, posePoints)
+
+    posePoints = parseImage(humanImg, woman)
+    # utils.segmentation(humanImg, posePoints)
 
 
 
@@ -160,11 +166,12 @@ def imageToSegAndPoints(clothesImg, humanImg):
 if __name__ == "__main__":
     man = "data/man-hands-on-waist-full-body.png"
     woman = "data/woman-hands-on-waist-full-body.png"
-    img = cv2.imread(man)
+    shirt = "data/woman-hands-on-waist-full-body.png"
+    img = cv2.imread(shirt)
 
     # image = np.zeros((img.shape[0], 900, img.shape[2]))
     # image[:, :, :] = img[:, :900, :]
     # image = .resize(img, (img.shape[0], img.shape[1]-100, img.shape[2]))
     # cv2.imwrite("data/woman-hands-on-waist-full-body.png", image)
 
-    imageToSegAndPoints(None, img)
+    imageToSegAndPoints(img, True, img, False)
