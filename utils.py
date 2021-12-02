@@ -272,18 +272,7 @@ def nClosestTo(n, p, arr, axis):
     return ret
 
 
-def segmentation(image, parts):
-    BODY = 0
-    RIGHT_BRANCHIAL = 1
-    RIGHT_FOREARM = 2
-    LEFT_BRANCHIAL = 3
-    LEFT_FOREARM = 4
-    RIGHT_THIGH = 5
-    RIGHT_CALF = 6
-    LEFT_THIGH = 7
-    LEFT_CALF = 8
-
-    shape = (image.shape[0], image.shape[1], 3)
+def segmentation(image, parts, type="clothes"):
     for i, part in enumerate(parts):
         arr = []
         for p in part:
@@ -293,19 +282,19 @@ def segmentation(image, parts):
         mask = np.zeros(cpy.shape)
         # cv2.fillConvexPoly(cpy, np.int32(final), (0,255,255))
         cv2.drawContours(mask, np.int32([final]), -1, (0, 255, 255), thickness=cv2.FILLED, lineType=cv2.LINE_AA)
-        cv2.imwrite(f"results/part_{i}.png", mask)
+        cv2.imwrite(f"results/{type}_{i}.png", mask)
 
-        mask = cv2.imread(f"results/part_{i}.png")
+        mask = cv2.imread(f"results/{type}_{i}.png")
         mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
         cpy = cv2.cvtColor(cpy, cv2.COLOR_BGR2GRAY)
         _, mask = cv2.threshold(mask, 50, 255, cv2.THRESH_BINARY)
         dst = cv2.bitwise_and(cpy, cpy, mask=mask)
-        cv2.imwrite(f"results/part_{i}.png", dst)
+        cv2.imwrite(f"results/{type}_{i}.png", dst)
 
-        src = cv2.imread(f"results/part_{i}.png")
+        src = cv2.imread(f"results/{type}_{i}.png")
         tmp = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
         _,alpha = cv2.threshold(tmp,0,255,cv2.THRESH_BINARY)
         b, g, r = cv2.split(src)
         rgba = [b,g,r, alpha]
         dst = cv2.merge(rgba,4)
-        cv2.imwrite(f"results/part_{i}.png", dst)
+        cv2.imwrite(f"results/{type}_{i}.png", dst)
