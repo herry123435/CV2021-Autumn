@@ -159,7 +159,6 @@ def imageToSegAndPoints(clothesImg, humanImg):
 
 if __name__ == "__main__":
     man = "data/man-hands-on-waist-full-body.png"
-    woman = "data/woman-full.jpg"
     woman = "data/woman-hands-on-waist-full-body.png"
     img = cv2.imread(man)
 
