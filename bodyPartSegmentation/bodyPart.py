@@ -5,11 +5,11 @@ import sys
 parser = argparse.ArgumentParser(description='loading eval params')
 parser.add_argument('--gpus', metavar='N', type=int, default=1)
 parser.add_argument('--model', type=str, default='./weights/model_simulated_RGB_mgpu_scaling_append.0071.h5', help='path to the weights file')
-parser.add_argument('--input_folder', type=str, default='../clothesInput', help='path to the folder with test images')
+parser.add_argument('--input_folder', type=str, default='../clothesInput', help='path to the folder with clothes images')
 parser.add_argument('--output_folder', type=str, default='../clothesOutput', help='path to the output folder')
 parser.add_argument('--max', type=bool, default=True)
 parser.add_argument('--average', type=bool, default=False)
-parser.add_argument('--scale', action='append', help='<Required> Set flag', required=True)
+parser.add_argument('--scale',  help='<Required> Set flag', default='1')
 
 args = parser.parse_args()
 
@@ -186,7 +186,6 @@ def process (input_image, params, model_params):
     
     return seg_avg
 
-
 if __name__ == '__main__':
 
     args = parser.parse_args()
@@ -198,12 +197,14 @@ if __name__ == '__main__':
     model.load_weights(keras_weights_file)
     params, model_params = config_reader()
 
+    
     scale_list = []
     for item in args.scale:
         scale_list.append(float(item))
 
     params['scale_search'] = scale_list
 
+    
     # generate image with body parts
     for filename in os.listdir(args.input_folder):
         if filename.endswith(".png") or filename.endswith(".jpg"):
@@ -244,18 +245,8 @@ if __name__ == '__main__':
                 print(file)
                 cv2.imwrite(file, segment)
 
-                '''
-                # 꼭짓점 검출
-                segmentGray = cv2.cvtColor(segment.astype('float32'), cv2.COLOR_BGR2GRAY) # 꼭짓점 추출에는 흑백 그림이 필요합니다.
-                segmentPoint = cv2.cvtColor(segment.astype('float32'), cv2.COLOR_BGR2RGB) # 나중에 꼭짓점을 여기에 표시합니다.
-                segmentGray = np.float32(segmentGray) # 넘파이(numpy)를 사용해서 자료형을 부동소수점으로 바꾸어주어야 합니다.
-                result = cv2.cornerHarris(segmentGray, 2, 3, 0.04) # 2, 3, 0.04는 바꿀 수 있는 인자들입니다.
-                result = cv2.dilate(result, None, iterations=6) # 꼭짓점을 표시하기 위해 확장 (dilate) 연산을 합니다.
-                segmentPoint[result>0.01*result.max()]=[255, 0, 0] # 꼭짓점이 빨간색 점으로 그림에 표시됩니다.
-                '''
-
             # 꼭짓점 검출
-            '''
+    '''
             img = cv2.imread('output/seg_0_clothes.jpg')
             contours, hierarchy = get_corner.getContour(img, visualize=False)
             smoothedImg = cv2.imread("output_point/contour.jpg")
@@ -263,7 +254,7 @@ if __name__ == '__main__':
             corners = get_corner.getCorners('output_point/contour.jpg')
             '''
             
-            '''
+    '''
             for i in range(0, 9):
                 img = cv2.imread('output/seg_{}_clothes.jpg'.format(i))
                 contourList, hList = get_corner.getContour(img, 50, "results/temp_contour.jpg")
