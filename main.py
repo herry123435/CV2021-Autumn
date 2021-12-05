@@ -92,10 +92,11 @@ if __name__ == '__main__' :
 
     # Task 1-1: 선영
     img = cv2.imread(os.path.join(clothesSegDir, clothesSegment), cv2.IMREAD_COLOR)
-    segImgs = np.zeros((9, img.shape[0], img.shape[1], 4))
+    segImgs = []
+    clothesSegDir = 'clothesOutput'
     for i in range(0,9):
-        img = cv2.imread(os.path.join(clothesSegDir, 'seg_{}_clothes.jpg'.format(i)), cv2.IMREAD_COLOR)
-        segImgs[i] = np.copy(img)
+         img = cv2.imread(os.path.join(clothesSegDir, 'seg_{}_clothes.png'.format(i)), cv2.IMREAD_UNCHANGED)
+         segImgs.append(np.copy(img))
     clothesJoints = detectJoint(clothesOnHumanImg)
     poseJoints = detectJoint(humanImg)
 
