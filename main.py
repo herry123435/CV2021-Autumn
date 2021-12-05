@@ -11,6 +11,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 from jointDetection import *
+from warpClothesSegs import *
 
 # Body parts order
 class BodyParts(Enum):
@@ -63,12 +64,10 @@ def findMatchings(clothesPoints, clothesJoints, posePoints, poseJoints):
 #   segImgs: list[9] (BodyParts(Enum) 순서)
 #   humanImg: numpy.ndarray (RGB 순서, size: M2*N2*3)
 #   orderedClothesPoints: list[39][2] (대응 순서에 맞게 정리한 옷에서 추출한 꼭지점들) 
-#   clothesJoints: list[15][2] (옷(을 입은 사람)에서 추출한 관절들) 
 #   orderedPosePoints: list[39][2] (대응 순서에 맞게 정리한 사람에서 추출한 꼭지점들) 
-#   poseJoints: list[15][2] (사람에서 추출한 관절들) 
 # output:
 #   clothesTriedOn: numpy.ndarray (최종 결과물, RGB 순서, size: M2*M2*3)
-def warpClothesSegs(segImgs, humanImg, orderedClothesPoints, clothesJoints, orderedPosePoints, poseJoints):
+def warpClothesSegs(segImgs, humanImg, orderedClothesPoints, orderedPosePoints):
     return np.zeros((1280, 1280, 3))
 
 if __name__ == '__main__' :
@@ -93,10 +92,10 @@ if __name__ == '__main__' :
     #print(poseJoints)
 
     # Task 2: 민재
-    orderedClothesPoints, orderedPostPoints = findMatchings(clothesPoints, clothesJoints, posePoints, poseJoints)
+    orderedClothesPoints, orderedPosePoints = findMatchings(clothesPoints, clothesJoints, posePoints, poseJoints)
 
     # Task 3: 경서
-    clothesTriedOn = warpClothesSegs(segImgs, humanImg, orderedClothesPoints, clothesJoints, orderedPostPoints, poseJoints)
+    clothesTriedOn = warpClothesSegs(segImgs, humanImg, orderedClothesPoints, orderedPosePoints).astype(np.uint8)
 
     # show result
     plt.subplot(1, 3, 1), plt.imshow(clothesOnHumanImg)
