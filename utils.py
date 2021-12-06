@@ -2,6 +2,7 @@ from typing_extensions import final
 import cv2
 from matplotlib.pyplot import contour, draw
 import numpy as np
+import math
 
 def visualizeImage(title, image, write=False):
     cv2.imshow(title, image)
@@ -28,11 +29,11 @@ def getContour(image, th=50, outputFileName="results/contour.jpg", visualize=Fal
     # Convert image to a usage matrix
     img_gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
     img_gray = cv2.blur(img_gray, (5,5))
-    img_gray = cv2.bitwise_not(img_gray)
-    _, thresh = cv2.threshold(img_gray, 50, 255, cv2.THRESH_BINARY)
+    # img_gray = cv2.bitwise_not(img_gray)
+    _, thresh = cv2.threshold(img_gray, 10, 255, cv2.THRESH_BINARY)
 
     # Find contour
-    contourList, hierarchyList = cv2.findContours(image=thresh, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
+    contourList, hierarchyList = cv2.findContours(image=thresh, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_NONE)
 
     # Remove noisy contours
     contours = []
@@ -298,3 +299,180 @@ def segmentation(image, parts, type="clothes"):
         rgba = [b,g,r, alpha]
         dst = cv2.merge(rgba,4)
         cv2.imwrite(f"results/{type}_{i}.png", dst)
+
+
+
+def getConvexHullDL(src, contours, hierarchy):
+    # # Convert image to a usage matrix
+    img_gray = cv2.cvtColor(src,cv2.COLOR_BGR2GRAY)
+    img_gray = cv2.blur(img_gray, (5,5))
+    img_gray = cv2.bitwise_not(img_gray)
+    _, thresh = cv2.threshold(img_gray, 50, 255, cv2.THRESH_BINARY)
+
+    # create hull array for convex hull points
+    hull = []
+    # calculate points for each contour
+    for i in range(len(contours)):
+        # creating convex hull object for each contour
+        hull.append(cv2.convexHull(contours[i], False))
+
+    # create an empty black image
+    drawing = np.zeros((thresh.shape[0], thresh.shape[1], 3), np.uint8)
+
+    validHull = []
+    validContours = []
+    # remove small areas
+    for c, h in zip(contours, hull):
+        area = cv2.contourArea(c)
+        if area > 1000:
+            validHull.append(h)
+            validContours.append(c)
+
+    color_contours = (0, 255, 0) # green - color for contours
+    color = (255, 0, 0) # blue - color for convex hull
+    # draw contours and hull points
+    tHull = []
+    for i in range(len(validContours)):
+        # draw ith contour
+        cv2.drawContours(drawing, validContours, i, color_contours, 2, 8)
+        # draw ith convex hull object
+        cv2.drawContours(drawing, validHull, i, color, 2, 8)
+        for h in validHull[i]:
+            h = h[0]
+            tHull.append(h)
+            cv2.putText(drawing, f"({i}, {h})", h, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_4)
+
+    # visualizeImage("results/convexHull.jpg", drawing, True)
+    cv2.imwrite("results/temp_convexHull.jpg", drawing)
+
+    return validHull, validContours, tHull
+
+
+def getExtremities(bBox, minDistance=35):
+    # # Convert image to a usage matrix
+    src = cv2.imread("./results/temp_contour.jpg")
+    img_gray = cv2.cvtColor(src,cv2.COLOR_BGR2GRAY)
+    img_gray = cv2.blur(img_gray, (5,5))
+    # img_gray = cv2.bitwise_not(img_gray)
+    _, thresh = cv2.threshold(img_gray, 50, 255, cv2.THRESH_BINARY)
+
+    cv2.imwrite("./data/temp.jpg", thresh)
+
+    maxCorners = 23
+    # Parameters for Shi-Tomasi algorithm
+    qualityLevel = 0.2
+    blockSize = 3
+    gradientSize = 3
+    useHarrisDetector = False
+    k = 0.04
+    # Copy the source image
+    # Apply corner detection
+    print("MINDIST", minDistance)
+    corners = cv2.goodFeaturesToTrack(thresh, maxCorners, qualityLevel, minDistance, None, \
+        blockSize=blockSize, gradientSize=gradientSize, useHarrisDetector=useHarrisDetector, k=k)
+    # Draw corners detected
+    print('** Number of corners detected:', corners.shape[0])
+    if corners.shape[0] < 4 and minDistance-5>=0 :
+        return getExtremities(bBox, minDistance-5)
+
+    print("CORNER", corners.shape)
+    return approximateWithRectangle(bBox, corners, thresh)
+
+def approximateWithRectangle(bBox, corners, thresh, num=4):
+    radius = 5
+    clr = cv2.cvtColor(thresh, cv2.COLOR_GRAY2BGR)
+    # Approximate with rectangle
+    pts = (bBox[0], bBox[1]), (bBox[0]+bBox[2], bBox[1]), (bBox[0], bBox[1]+bBox[3]), (bBox[0]+bBox[2], bBox[1]+bBox[3])
+    extrem = [None for i in range(num)]
+    distList = [[] for i in range(4)]
+    for j in range(len(pts)):
+        mini = 50000
+        for i in range(corners.shape[0]):
+            dist = getEuclDist(pts[j], corners[i, 0])
+            # print(pts[j], corners[i, 0], dist)
+            distList[j].append((corners[i, 0], dist))
+            if mini >= getEuclDist(pts[j], corners[i, 0]):
+                extrem[j] = (corners[i, 0, 0], corners[i, 0, 1])
+                mini = dist
+    noDupList = set(extrem)
+    if len(noDupList) == 4:
+        for pt in extrem:
+            print(pt)
+            cv2.circle(clr, (int(pt[0]), int(pt[1])), radius, (0, 255, 0), cv2.FILLED)
+        cv2.imwrite("./data/temp.jpg", clr)
+        return extrem
+
+    for dup in noDupList:
+        dupList = []
+        for j in range(len(extrem)):
+            if dup[0] == extrem[j][0] and dup[1] == extrem[j][1]:
+                dupList.append(j)
+        if len(dupList) == 2:
+            a = sorted(distList[dupList[0]], key=lambda x: x[1])[1]
+            b = sorted(distList[dupList[1]], key=lambda x: x[1])[1]
+            if a[1] <= b[1]:
+                extrem[dupList[0]] = a[0]
+            else:
+                extrem[dupList[1]] = b[0]
+        elif len(dupList) > 2:
+            print("LOST CAUSE")
+            extrem = corners[:4, 0]
+            for pt in extrem:
+                print(pt)
+                cv2.circle(clr, (int(pt[0]), int(pt[1])), radius, (0, 255, 0), cv2.FILLED)
+            cv2.imwrite("./data/temp.jpg", clr)
+            return corners[:4, 0]
+
+    for pt in extrem:
+        print(pt)
+        cv2.circle(clr, (int(pt[0]), int(pt[1])), radius, (0, 255, 0), cv2.FILLED)
+
+    cv2.imwrite("./data/temp.jpg", clr)
+
+    return extrem
+
+
+def getEuclDist(pt1, pt2):
+    return math.sqrt((pt1[0]-pt2[0])**2 + (pt1[1]-pt2[1])**2)
+
+
+def rectangle(contours):
+    image = cv2.imread('./results/temp_contour.jpg')
+
+    # Convert image to a usage matrix
+    img_gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
+    img_gray = cv2.blur(img_gray, (5,5))
+    ret, thresh = cv2.threshold(img_gray, 50, 255, cv2.THRESH_BINARY)
+
+    ## [allthework]
+    # Approximate contours to polygons + get bounding rects and circles
+    contours_poly = [None]*len(contours)
+    boundRect = [None]*len(contours)
+    centers = [None]*len(contours)
+    radius = [None]*len(contours)
+    for i, c in enumerate(contours):
+        contours_poly[i] = cv2.approxPolyDP(c, 3, True)
+        boundRect[i] = cv2.boundingRect(contours_poly[i])
+        centers[i], radius[i] = cv2.minEnclosingCircle(contours_poly[i])
+    ## [allthework]
+
+    ## [zeroMat]
+    drawing = np.zeros((image.shape[0], image.shape[1], 3), dtype=np.uint8)
+    ## [zeroMat]
+
+    ## [forContour]
+    # Draw polygonal contour + bonding rects + circles
+    for i in range(len(contours)):
+        color = (255, 100, 50)
+        cv2.drawContours(drawing, contours_poly, i, color)
+        cv2.rectangle(drawing, (int(boundRect[i][0]), int(boundRect[i][1])), \
+          (int(boundRect[i][0]+boundRect[i][2]), int(boundRect[i][1]+boundRect[i][3])), color, 2)
+
+    ## [forContour]
+
+    ## [showDrawings]
+    # Show in a window
+    cv2.imwrite("./results/temp_rectangle.jpg", drawing)
+    ## [showDrawings]
+
+    return boundRect[0]
