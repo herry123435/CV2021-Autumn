@@ -169,6 +169,20 @@ def imageToSegAndPoints(clothesImg, cGender, humanImg, hGender):
     return clothesPoints, posePoints
 
 
+def detectCorners(img, name):
+    utils.getCorners(name)
+    contourList, hList = utils.getContour(img, 50, "results/temp_contour.jpg")
+    bBox = utils.rectangle(contourList)
+
+    # _, _, pnts = utils.getConvexHull(img, contourList, hList)
+    _, _, pnts = utils.getConvexHullDL(img, contourList, hList)
+    pnts = utils.getExtremities(bBox)
+    cImg = cv2.imread(name)
+    for dot in pnts:
+        cv2.circle(cImg, (int(dot[0]), int(dot[1])), 7, (255,255,255), 2)
+    cv2.imwrite(f"results/final_{IDX}.jpg", cImg)
+
+    return pnts
 
 
 if __name__ == "__main__":
@@ -177,9 +191,15 @@ if __name__ == "__main__":
     wImg = cv2.imread(woman)
     mImg = cv2.imread(man)
 
-    # image = np.zeros((img.shape[0], 900, img.shape[2]))
-    # image[:, :, :] = img[:, :900, :]
-    # image = .resize(img, (img.shape[0], img.shape[1]-100, img.shape[2]))
-    # cv2.imwrite("data/woman-hands-on-waist-full-body.png", image)
+    # imageToSegAndPoints(wImg, WOMAN, mImg, MAN)
 
-    imageToSegAndPoints(wImg, WOMAN, mImg, MAN)
+    # AFTER SEGMENTATION FROM DL:
+    corners = []
+    for i in range(0, 9):
+        print(i)
+        IDX = i
+        fName = f"data/seg_{IDX}_man2.png"
+        img = cv2.imread(fName)
+
+        pnts = detectCorners(img, fName)
+        corners.extend(pnts)
