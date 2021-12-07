@@ -20,7 +20,7 @@ class Transform(Enum):
 def warpClothesSegs(segImgs, humanImg, ordered_clothes_points, ordered_pose_points):
     ################################# hyper parameter #################################
     transformType = Transform.ThinPlateSpline   # warping type
-    Nb = 6                                      # height of gaussian pyramid
+    Nb = 1                                      # height of gaussian pyramid
     ###################################################################################
     
     divider = pow(2, Nb)
