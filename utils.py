@@ -29,6 +29,44 @@ def getContour(image, th=50, outputFileName="results/contour.jpg", visualize=Fal
     # Convert image to a usage matrix
     img_gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
     img_gray = cv2.blur(img_gray, (5,5))
+    img_gray = cv2.bitwise_not(img_gray)
+    _, thresh = cv2.threshold(img_gray, 50, 255, cv2.THRESH_BINARY)
+
+    # Find contour
+    contourList, hierarchyList = cv2.findContours(image=thresh, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
+
+    # Remove noisy contours
+    contours = []
+    th = 1000
+    for i in range(len(contourList)):
+        area = cv2.contourArea(contourList[i])
+        if area >= th:
+            contours.append(contourList[i])
+
+    contour_img = np.zeros(image.shape)
+    cv2.drawContours(image=contour_img, contours=contours, contourIdx=-1, color=(0, 255, 0), thickness=2, lineType=cv2.LINE_AA)
+    print(type(contour_img), contour_img.shape)
+
+    # Output (visualize and save)
+    if visualize:
+        visualizeImage(outputFileName, contour_img, False)
+    cv2.imwrite(outputFileName, contour_img)
+    return contourList, hierarchyList
+
+
+def getContourDL(image, th=50, outputFileName="results/contour.jpg", visualize=False):
+    """Get contour image from normal image. Visualize, save and return the image.
+
+    Args:
+        imageFileName (string): file name of input image
+        outputFileName (string): file name of output image. Default is contour.jpg
+        visualize (bool): show result
+    Return:
+        np.array(shape=(h, w, 3)): resulting image
+    """
+    # Convert image to a usage matrix
+    img_gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
+    img_gray = cv2.blur(img_gray, (5,5))
     # img_gray = cv2.bitwise_not(img_gray)
     _, thresh = cv2.threshold(img_gray, 10, 255, cv2.THRESH_BINARY)
 
@@ -278,18 +316,60 @@ def segmentation(image, parts, type="clothes"):
         arr = []
         for p in part:
             arr.append([[p[0], p[1]]])
-        final = np.array(arr)
+        final = np.array(arr, dtype="float32")
+
+        # get masking rectangle
+        boundRect = cv2.boundingRect(final)
         cpy = image.copy()
         mask = np.zeros(cpy.shape)
         # cv2.fillConvexPoly(cpy, np.int32(final), (0,255,255))
-        cv2.drawContours(mask, np.int32([final]), -1, (0, 255, 255), thickness=cv2.FILLED, lineType=cv2.LINE_AA)
+        # cv2.drawContours(mask, np.int32([final]), -1, (0, 255, 255), thickness=cv2.FILLED, lineType=cv2.LINE_AA)
+        cv2.rectangle(mask, (int(boundRect[0]), int(boundRect[1])), \
+          (int(boundRect[0]+boundRect[2]), int(boundRect[1]+boundRect[3])), (255, 25, 50), -1)
         cv2.imwrite(f"results/{type}_{i}.png", mask)
+        cv2.rectangle(mask, (int(boundRect[0]), int(boundRect[1])), \
+          (int(boundRect[0]+boundRect[2]), int(boundRect[1]+boundRect[3])), (255, 25, 50), 2)
+        cv2.imwrite(f"results/{type}_{i}_rectangle.png", mask)
 
+        # get body mask
         mask = cv2.imread(f"results/{type}_{i}.png")
         mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
-        cpy = cv2.cvtColor(cpy, cv2.COLOR_BGR2GRAY)
         _, mask = cv2.threshold(mask, 50, 255, cv2.THRESH_BINARY)
         dst = cv2.bitwise_and(cpy, cpy, mask=mask)
+        cv2.imwrite(f"results/{type}_{i}.png", dst)
+
+        # Get mask for part to remove
+        base = cv2.imread(f"results/{type}_{i}.png")
+        img_gray = cv2.cvtColor(base,cv2.COLOR_BGR2GRAY)
+        img_gray = cv2.blur(img_gray, (5,5))
+        img_gray = cv2.bitwise_not(img_gray)
+        _, thresh = cv2.threshold(img_gray, 30, 255, cv2.THRESH_BINARY)
+        contourList, hierarchyList = cv2.findContours(image=thresh, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
+        # Remove noisy contours
+        contours = []
+        th = 1000
+        for j in range(len(contourList)):
+            area = cv2.contourArea(contourList[j])
+            if area >= th:
+                contours.append(contourList[j])
+        contour_img = np.zeros(base.shape)
+        cv2.drawContours(image=contour_img, contours=contours[1:], contourIdx=-1, color=(0, 255, 0), thickness=-1, lineType=cv2.LINE_AA)
+        cv2.imwrite(f"results/{type}_{i}_contour.jpg", contour_img)
+
+        # # cut out from image using mask
+        mask = cv2.imread(f"results/{type}_{i}.png")
+        mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+        _, mask = cv2.threshold(mask, 50, 255, cv2.THRESH_BINARY)
+        dst = cv2.bitwise_and(cpy, cpy, mask=mask)
+
+        mask = cv2.imread(f"results/{type}_{i}_contour.jpg")
+        mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+        _, mask = cv2.threshold(mask, 50, 255, cv2.THRESH_BINARY)
+        dst = cv2.bitwise_not(dst, dst, mask=mask)
+        dst[int(boundRect[1]), int(boundRect[0]):int(boundRect[0]) + int(boundRect[2])] = 0
+        dst[int(boundRect[1]): int(boundRect[1]) + int(boundRect[3]), int(boundRect[0])] = 0
+        dst[int(boundRect[1]) + int(boundRect[3]), int(boundRect[0]):int(boundRect[0]) + int(boundRect[2])] = 0
+        dst[int(boundRect[1]): int(boundRect[1]) + int(boundRect[3]), int(boundRect[0]) + int(boundRect[2])] = 0
         cv2.imwrite(f"results/{type}_{i}.png", dst)
 
         src = cv2.imread(f"results/{type}_{i}.png")
@@ -348,7 +428,7 @@ def getConvexHullDL(src, contours, hierarchy):
     return validHull, validContours, tHull
 
 
-def getExtremities(bBox, minDistance=35):
+def getExtremitiesDL(bBox, minDistance=35):
     # # Convert image to a usage matrix
     src = cv2.imread("./results/temp_contour.jpg")
     img_gray = cv2.cvtColor(src,cv2.COLOR_BGR2GRAY)
