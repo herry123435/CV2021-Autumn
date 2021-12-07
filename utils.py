@@ -327,13 +327,11 @@ def segmentation(image, parts, type="clothes"):
         cv2.rectangle(mask, (int(boundRect[0]), int(boundRect[1])), \
           (int(boundRect[0]+boundRect[2]), int(boundRect[1]+boundRect[3])), (255, 25, 50), -1)
         cv2.imwrite(f"results/{type}_{i}.png", mask)
-        cv2.rectangle(mask, (int(boundRect[0]), int(boundRect[1])), \
-          (int(boundRect[0]+boundRect[2]), int(boundRect[1]+boundRect[3])), (255, 25, 50), 2)
-        cv2.imwrite(f"results/{type}_{i}_rectangle.png", mask)
 
         # get body mask
         mask = cv2.imread(f"results/{type}_{i}.png")
         mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+        mask = cv2.blur(mask, (5,5))
         _, mask = cv2.threshold(mask, 50, 255, cv2.THRESH_BINARY)
         dst = cv2.bitwise_and(cpy, cpy, mask=mask)
         cv2.imwrite(f"results/{type}_{i}.png", dst)
@@ -359,12 +357,13 @@ def segmentation(image, parts, type="clothes"):
         # # cut out from image using mask
         mask = cv2.imread(f"results/{type}_{i}.png")
         mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
-        _, mask = cv2.threshold(mask, 50, 255, cv2.THRESH_BINARY)
+        _, mask = cv2.threshold(mask, 10, 255, cv2.THRESH_BINARY)
         dst = cv2.bitwise_and(cpy, cpy, mask=mask)
+        cv2.imwrite(f"results/{type}_{i}.png", dst)
 
         mask = cv2.imread(f"results/{type}_{i}_contour.jpg")
         mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
-        _, mask = cv2.threshold(mask, 50, 255, cv2.THRESH_BINARY)
+        _, mask = cv2.threshold(mask, 10, 255, cv2.THRESH_BINARY)
         dst = cv2.bitwise_not(dst, dst, mask=mask)
         dst[int(boundRect[1]), int(boundRect[0]):int(boundRect[0]) + int(boundRect[2])] = 0
         dst[int(boundRect[1]): int(boundRect[1]) + int(boundRect[3]), int(boundRect[0])] = 0
@@ -374,7 +373,7 @@ def segmentation(image, parts, type="clothes"):
 
         src = cv2.imread(f"results/{type}_{i}.png")
         tmp = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
-        _,alpha = cv2.threshold(tmp,0,255,cv2.THRESH_BINARY)
+        _,alpha = cv2.threshold(tmp,30,255,cv2.THRESH_BINARY)
         b, g, r = cv2.split(src)
         rgba = [b,g,r, alpha]
         dst = cv2.merge(rgba,4)
