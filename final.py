@@ -191,15 +191,15 @@ if __name__ == "__main__":
     wImg = cv2.imread(woman)
     mImg = cv2.imread(man)
 
-    # imageToSegAndPoints(wImg, WOMAN, mImg, MAN)
+    imageToSegAndPoints(wImg, WOMAN, mImg, MAN)
 
     # AFTER SEGMENTATION FROM DL:
-    corners = []
-    for i in range(0, 9):
-        print(i)
-        IDX = i
-        fName = f"data/seg_{IDX}_man2.png"
-        img = cv2.imread(fName)
+    # corners = []
+    # for i in range(0, 9):
+    #     print(i)
+    #     IDX = i
+    #     fName = f"data/seg_{IDX}_man2.png"
+    #     img = cv2.imread(fName)
 
-        pnts = detectCorners(img, fName)
-        corners.extend(pnts)
+    #     pnts = detectCorners(img, fName)
+    #     corners.extend(pnts)
