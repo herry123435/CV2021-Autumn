@@ -249,6 +249,7 @@ def groupSimilarPoints(hull):
 
 def getExtremities(hulls):
     bodyIdx = maxi = 0
+    print(hulls)
     for i, h in enumerate(hulls):
         area = cv2.contourArea(h)
         if area > maxi:
@@ -452,7 +453,7 @@ def getExtremitiesDL(bBox, minDistance=35):
     # Draw corners detected
     print('** Number of corners detected:', corners.shape[0])
     if corners.shape[0] < 4 and minDistance-5>=0 :
-        return getExtremities(bBox, minDistance-5)
+        return getExtremitiesDL(bBox, minDistance-5)
 
     print("CORNER", corners.shape)
     return approximateWithRectangle(bBox, corners, thresh)
