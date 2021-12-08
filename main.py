@@ -13,6 +13,8 @@ import numpy as np
 from jointDetection import *
 from warpClothesSegs import *
 
+
+
 # Body parts order
 class BodyParts(Enum):
     BODY = 0
@@ -73,10 +75,12 @@ def warpClothesSegs(segImgs, humanImg, orderedClothesPoints, orderedPosePoints):
 if __name__ == '__main__' :
     clothesDir = 'clothesInput'
     humanDir = 'humanInput'
+    clothesSegDir = 'clothesOutput'
 
     # get Input
     clothesOnHumanSrc = 'manWithSweater.jpeg' #'clothesInput.jpeg'
     humanSrc = 'humanPose01.jpeg'#'humanInput.jpeg'
+    clothesSegment = 'seg_0_clothes.jpg'
 
     # read image
     clothesOnHumanImg = cv2.cvtColor(cv2.imread(os.path.join(clothesDir, clothesOnHumanSrc), cv2.IMREAD_COLOR), cv2.COLOR_BGR2RGB)
@@ -86,10 +90,14 @@ if __name__ == '__main__' :
     segImgs, clothesPoints, clothesJoints, posePoints, poseJoints = imageToSegAndPoints(clothesOnHumanImg, humanImg)
 
     # Task 1-1: 선영
+    img = cv2.imread(os.path.join(clothesSegDir, clothesSegment), cv2.IMREAD_COLOR)
+    segImgs = []
+    clothesSegDir = 'clothesOutput'
+    for i in range(0,9):
+         img = cv2.imread(os.path.join(clothesSegDir, 'seg_{}_clothes.png'.format(i)), cv2.IMREAD_UNCHANGED)
+         segImgs.append(np.copy(img))
     clothesJoints = detectJoint(clothesOnHumanImg)
-    #print(clothesJoints)
     poseJoints = detectJoint(humanImg)
-    #print(poseJoints)
 
     # Task 2: 민재
     orderedClothesPoints, orderedPosePoints = findMatchings(clothesPoints, clothesJoints, posePoints, poseJoints)

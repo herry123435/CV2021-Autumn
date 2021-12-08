@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-# 선영님/현수님
-# 이미지에서 나온 39개의 꼭지점과 15개의 관절을 반환
+# 선영님
+# 이미지에서 나온 15개의 관절을 반환
 #
 # input: 
 #   img: numpy.ndarray (cv2.imread만 한 상태, RGB 순서, size: M1*N1*3)
