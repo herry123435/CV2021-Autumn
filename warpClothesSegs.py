@@ -26,7 +26,7 @@ def warpClothesSegs(segImgs, humanImg, ordered_clothes_points, ordered_pose_poin
     divider = pow(2, Nb)
 
     total_parts_num = 9
-    pair_num = [7, 4, 4, 4, 4, 4, 4, 4, 4] # number of pairs for each body part
+    pair_num = [8, 4, 4, 4, 4, 4, 4, 4, 4] # number of pairs for each body part
     matchStartNum = 0
 
     tried_on = humanImg
@@ -128,72 +128,114 @@ if __name__ == '__main__':
     segImgs = []
     clothesSegDir = 'clothesOutput'
     for i in range(0,9):
-         img = cv2.imread(os.path.join(clothesSegDir, 'seg_{}_clothes.png'.format(i)), cv2.IMREAD_UNCHANGED)
+         img = cv2.imread(os.path.join(clothesSegDir, 'seg_{}_man2.png'.format(i)), cv2.IMREAD_UNCHANGED)
          segImgs.append(np.copy(img))
 
     humanDir = 'humanInput'
-    humanImg = cv2.imread(os.path.join(humanDir, 'humanPose01.jpeg'), cv2.IMREAD_COLOR)
+    humanImg = cv2.imread(os.path.join(humanDir, 'humanPose02.jpg'), cv2.IMREAD_COLOR)
 
     clothes_points = [
         # BODY
-        (317, 188),
-        (225, 243),
-        (239, 285),
-        (237, 426),
-        (417, 228),
-        (400, 269),
-        (398, 423),
+        (364, 220),
+        (257, 280),
+        (283, 330),
+        (284, 539),
+        (470, 280),
+        (450, 306),
+        (455, 522),
+        (366, 565),
         # RIGHT BRANCHIAL
-        (417, 228),
-        (400, 269),
-        (406, 364),
-        (451, 361),
+        (471, 281),
+        (451, 307),
+        (461, 414),
+        (489, 409),
         # RIGHT FOREARM
-        (451, 361),
-        (406, 364),
-        (402, 514),
-        (451, 510),
+        (489, 410),
+        (461, 415),
+        (452, 497),
+        (474, 505),
         # LEFT BRANCHIAL
-        (225, 243),
-        (239, 285),
-        (236, 376),
-        (201, 375),
+        (256, 281),
+        (282, 331),
+        (277, 424),
+        (239, 423),
         # LEFT FOREARM
-        (201, 375),
-        (236, 376),
-        (227, 516),
-        (205, 521),
+        (239, 424),
+        (277, 425),
+        (277, 548),
+        (241, 550),
+        # RIGHT THIGH
+        (455, 523),
+        (366, 566),
+        (370, 727),
+        (441, 734),
+        # RIGHT CALF
+        (441, 735),
+        (370, 728),
+        (376, 886),
+        (419, 890),
+        # LEFT THIGH
+        (284, 540),
+        (365, 565),
+        (350, 746),
+        (283, 756),
+        # LEFT CALF
+        (283, 757),
+        (350, 747),
+        (341, 902),
+        (292, 907),
     ]
 
     human_points = [
         # BODY
-        (564, 333),
-        (286, 479),
-        (381, 605),
-        (368, 929),
-        (826, 493),
-        (745, 607),
-        (723, 929),
+        (342, 265),
+        (276, 292),
+        (284, 327),
+        (276, 484),
+        (404, 291),
+        (393, 328),
+        (405, 487),
+        (343, 519),
         # RIGHT BRANCHIAL
-        (826, 493),
-        (745, 607),
-        (763, 812),
-        (863, 802),
+        (405, 292),
+        (394, 329),
+        (402, 391),
+        (432, 390),
         # RIGHT FOREARM
-        (863, 802),
-        (763, 812),
-        (807, 1090),
-        (862, 1088),
+        (432, 391),
+        (402, 392),
+        (411, 493),
+        (425, 479),
         # LEFT BRANCHIAL
-        (286, 479),
-        (381, 605),
-        (327, 814),
-        (227, 801),
+        (275, 293),
+        (283, 328),
+        (280, 398),
+        (250, 393),
         # LEFT FOREARM
-        (227, 801),
-        (327, 814),
-        (292, 1081),
-        (234, 1090),
+        (250, 394),
+        (280, 399),
+        (277, 476),
+        (264, 490),
+        # RIGHT THIGH
+        (405, 488),
+        (344, 522),
+        (346, 646),
+        (397, 656),
+        # RIGHT CALF
+        (397, 657),
+        (346, 647),
+        (369, 774),
+        (392, 774),
+        # LEFT THIGH
+        (276, 485),
+        (343, 522),
+        (342, 654),
+        (286, 657),
+        # LEFT CALF
+        (286, 658),
+        (341, 657),
+        (309, 769),
+        (290, 767),
     ]
 
     tried_on = warpClothesSegs(segImgs, humanImg, clothes_points, human_points)
