@@ -129,7 +129,7 @@ if __name__ == '__main__':
     segImgs = []
     clothesSegDir = 'segImage'
     for i in range(0,9):
-         img = cv2.imread(os.path.join(clothesSegDir, 'clothes_1_seg_{}.png'.format(i)), cv2.IMREAD_UNCHANGED)
+         img = cv2.imread(os.path.join(clothesSegDir, 'clothes_2_seg_{}.png'.format(i)), cv2.IMREAD_UNCHANGED)
          segImgs.append(np.copy(img))
 
     humanDir = 'inputImage'
@@ -140,7 +140,7 @@ if __name__ == '__main__':
     for i in range(0, 9):
         #print(i)
         IDX = i
-        fName = f"segImage/clothes_1_seg_{IDX}.png"
+        fName = f"segImage/clothes_2_seg_{IDX}.png"
         img = cv2.imread(fName)
         pnts = detectCorners(img, fName, IDX)
         for j in pnts:
