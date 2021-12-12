@@ -27,7 +27,7 @@ def warpClothesSegs(segImgs, humanImg, ordered_clothes_points, ordered_pose_poin
     divider = pow(2, Nb)
 
     total_parts_num = 9
-    pair_num = [8, 4, 4, 4, 4, 4, 4, 4, 4] # number of pairs for each body part
+    pair_num = [8, 3, 4, 3, 4, 4, 4, 4, 4] # number of pairs for each body part
     matchStartNum = 0
 
     tried_on = humanImg
