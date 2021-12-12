@@ -5,8 +5,8 @@ import sys
 parser = argparse.ArgumentParser(description='loading eval params')
 parser.add_argument('--gpus', metavar='N', type=int, default=1)
 parser.add_argument('--model', type=str, default='./weights/model_simulated_RGB_mgpu_scaling_append.0071.h5', help='path to the weights file')
-parser.add_argument('--input_folder', type=str, default='../clothesInput', help='path to the folder with clothes images')
-parser.add_argument('--output_folder', type=str, default='../clothesOutput', help='path to the output folder')
+parser.add_argument('--input_folder', type=str, default='../inputImage', help='path to the folder with clothes images')
+parser.add_argument('--output_folder', type=str, default='../segImage', help='path to the output folder')
 parser.add_argument('--max', type=bool, default=True)
 parser.add_argument('--average', type=bool, default=False)
 parser.add_argument('--scale',  help='<Required> Set flag', default='1')
@@ -241,29 +241,6 @@ if __name__ == '__main__':
                         if re_canvas[i][j][k] == 1:
                             segment[i][j][:-1] = cur_canvas[i][j]
                             segment[i][j][3] = 255
-                file = '%s/%s'%(args.output_folder,'seg_' + str(k) + '_' + filename)
+                file = '%s/%s'%(args.output_folder, filename[:-4] + '_seg_' + str(k) + '.png')
                 print(file)
                 cv2.imwrite(file, segment)
-
-            # 꼭짓점 검출
-    '''
-            img = cv2.imread('output/seg_0_clothes.jpg')
-            contours, hierarchy = get_corner.getContour(img, visualize=False)
-            smoothedImg = cv2.imread("output_point/contour.jpg")
-            validHull, validContours = get_corner.getConvexHull(smoothedImg, contours, hierarchy)
-            corners = get_corner.getCorners('output_point/contour.jpg')
-            '''
-            
-    '''
-            for i in range(0, 9):
-                img = cv2.imread('output/seg_{}_clothes.jpg'.format(i))
-                contourList, hList = get_corner.getContour(img, 50, "results/temp_contour.jpg")
-                _, _, pnts = get_corner.getConvexHull(img, contourList, hList)
-
-                #cImg = cv2.imread("output/seg_{}_clothes.jpg")
-                for dot in pnts:
-                    cv2.circle(img, (int(dot[0]), int(dot[1])), 7, (255,255,255), 2)
-                cv2.imwrite("output/points_{}_clothes.jpg".format(i), img)
-            '''
-            
-            #cv2.imwrite(file, segment)
