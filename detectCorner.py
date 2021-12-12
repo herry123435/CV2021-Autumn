@@ -130,7 +130,7 @@ def parseMan(img, corners, contours, hulls):
 
 
 def parseImage(img, gender):
-    print(img.shape)
+    #print(img.shape)
 
     # 1. Get contour
     contours, hierarchy = utils.getContour(img, visualize=False)
@@ -169,7 +169,7 @@ def imageToSegAndPoints(clothesImg, cGender, humanImg, hGender):
     return clothesPoints, posePoints
 
 
-def detectCorners(img, name):
+def detectCorners(img, name, IDX):
     contourList, hList = utils.getContourDL(img, 50, "results/temp_contour.jpg")
     bBox = utils.rectangle(contourList)
     _, _, pnts = utils.getConvexHullDL(img, contourList, hList)
@@ -183,10 +183,10 @@ def detectCorners(img, name):
 
 
 if __name__ == "__main__":
-    man = "data/man-hands-on-waist-full-body.png"
-    woman = "data/woman-hands-on-waist-full-body.png"
-    wImg = cv2.imread(woman)
-    mImg = cv2.imread(man)
+    #man = "data/man-hands-on-waist-full-body.png"
+    #woman = "data/woman-hands-on-waist-full-body.png"
+    #wImg = cv2.imread(woman)
+    #mImg = cv2.imread(man)
 
     # imageToSegAndPoints(wImg, WOMAN, mImg, MAN)
 
@@ -194,7 +194,7 @@ if __name__ == "__main__":
     all_cor = []
     corners = []
     for i in range(0, 9):
-        print(i)
+        #print(i)
         IDX = i
         fName = f"segImage/human_seg_{IDX}.png"
         img = cv2.imread(fName)
@@ -202,5 +202,5 @@ if __name__ == "__main__":
         for j in pnts:
             all_cor.append(j)
         corners.extend(pnts)
-    print(all_cor)
-    print(len(all_cor))
+    #print(all_cor)
+    #print(len(all_cor))

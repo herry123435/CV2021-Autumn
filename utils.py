@@ -45,7 +45,7 @@ def getContour(image, th=50, outputFileName="results/contour.jpg", visualize=Fal
 
     contour_img = np.zeros(image.shape)
     cv2.drawContours(image=contour_img, contours=contours, contourIdx=-1, color=(0, 255, 0), thickness=2, lineType=cv2.LINE_AA)
-    print(type(contour_img), contour_img.shape)
+    #print(type(contour_img), contour_img.shape)
 
     # Output (visualize and save)
     if visualize:
@@ -83,7 +83,7 @@ def getContourDL(image, th=50, outputFileName="results/contour.jpg", visualize=F
 
     contour_img = np.zeros(image.shape)
     cv2.drawContours(image=contour_img, contours=contours, contourIdx=-1, color=(0, 255, 0), thickness=2, lineType=cv2.LINE_AA)
-    print(type(contour_img), contour_img.shape)
+    #print(type(contour_img), contour_img.shape)
 
     # Output (visualize and save)
     if visualize:
@@ -196,7 +196,7 @@ def getConvexHull(src, contours, hierarchy):
     color = (255, 0, 0) # blue - color for convex hull
     # draw contours and hull points
     for i in range(len(validContours)):
-        print(i)
+        #print(i)
         # draw ith contour
         cv2.drawContours(drawing, validContours, i, color_contours, 2, 8)
         # draw ith convex hull object
@@ -249,7 +249,7 @@ def groupSimilarPoints(hull):
 
 def getExtremities(hulls):
     bodyIdx = maxi = 0
-    print(hulls)
+    #print(hulls)
     for i, h in enumerate(hulls):
         area = cv2.contourArea(h)
         if area > maxi:
@@ -262,7 +262,7 @@ def getExtremities(hulls):
     extBot = tuple(c[c[:, :, 1].argmax()][0])
 
     bottom = []
-    print(extBot[1])
+    #print(extBot[1])
     for h in hulls[bodyIdx]:
         h = h[0]
         if isSimilar(h[1],extBot[1]):
@@ -447,15 +447,15 @@ def getExtremitiesDL(bBox, minDistance=35):
     k = 0.04
     # Copy the source image
     # Apply corner detection
-    print("MINDIST", minDistance)
+    #print("MINDIST", minDistance)
     corners = cv2.goodFeaturesToTrack(thresh, maxCorners, qualityLevel, minDistance, None, \
         blockSize=blockSize, gradientSize=gradientSize, useHarrisDetector=useHarrisDetector, k=k)
     # Draw corners detected
-    print('** Number of corners detected:', corners.shape[0])
+    #print('** Number of corners detected:', corners.shape[0])
     if corners.shape[0] < 4 and minDistance-5>=0 :
         return getExtremitiesDL(bBox, minDistance-5)
 
-    print("CORNER", corners.shape)
+    #print("CORNER", corners.shape)
     return approximateWithRectangle(bBox, corners, thresh)
 
 def approximateWithRectangle(bBox, corners, thresh, num=4):
@@ -477,7 +477,7 @@ def approximateWithRectangle(bBox, corners, thresh, num=4):
     noDupList = set(extrem)
     if len(noDupList) == 4:
         for pt in extrem:
-            print(pt)
+            #print(pt)
             cv2.circle(clr, (int(pt[0]), int(pt[1])), radius, (0, 255, 0), cv2.FILLED)
         cv2.imwrite("./data/temp.jpg", clr)
         return extrem
@@ -495,16 +495,16 @@ def approximateWithRectangle(bBox, corners, thresh, num=4):
             else:
                 extrem[dupList[1]] = b[0]
         elif len(dupList) > 2:
-            print("LOST CAUSE")
+            #print("LOST CAUSE")
             extrem = corners[:4, 0]
             for pt in extrem:
-                print(pt)
+                #print(pt)
                 cv2.circle(clr, (int(pt[0]), int(pt[1])), radius, (0, 255, 0), cv2.FILLED)
             cv2.imwrite("./data/temp.jpg", clr)
             return corners[:4, 0]
 
     for pt in extrem:
-        print(pt)
+        #print(pt)
         cv2.circle(clr, (int(pt[0]), int(pt[1])), radius, (0, 255, 0), cv2.FILLED)
 
     cv2.imwrite("./data/temp.jpg", clr)
