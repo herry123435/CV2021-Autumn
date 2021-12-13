@@ -428,7 +428,7 @@ def getConvexHullDL(src, contours, hierarchy):
     return validHull, validContours, tHull
 
 
-def getExtremitiesDL(bBox, minDistance=35):
+def getExtremitiesDL(bBox, n, minDistance=35):
     # # Convert image to a usage matrix
     src = cv2.imread("./results/temp_contour.jpg")
     img_gray = cv2.cvtColor(src,cv2.COLOR_BGR2GRAY)
@@ -453,10 +453,17 @@ def getExtremitiesDL(bBox, minDistance=35):
     # Draw corners detected
     #print('** Number of corners detected:', corners.shape[0])
     if corners.shape[0] < 4 and minDistance-5>=0 :
-        return getExtremitiesDL(bBox, minDistance-5)
+        return getExtremitiesDL(bBox, n, minDistance-5)
 
-    #print("CORNER", corners.shape)
-    return approximateWithRectangle(bBox, corners, thresh)
+    # print("CORNER", corners.shape)
+    if n == 3:
+        for pt in corners[:3, 0]:
+            # print('a', pt)
+            cv2.circle(src, (int(pt[0]), int(pt[1])), 5, (255, 0, 255), cv2.FILLED)
+        cv2.imwrite("./data/temp.jpg", src)
+        return corners[:3, 0]
+    else:
+        return approximateWithRectangle(bBox, corners, thresh, n)
 
 def approximateWithRectangle(bBox, corners, thresh, num=4):
     radius = 5
@@ -464,7 +471,7 @@ def approximateWithRectangle(bBox, corners, thresh, num=4):
     # Approximate with rectangle
     pts = (bBox[0], bBox[1]), (bBox[0]+bBox[2], bBox[1]), (bBox[0], bBox[1]+bBox[3]), (bBox[0]+bBox[2], bBox[1]+bBox[3])
     extrem = [None for i in range(num)]
-    distList = [[] for i in range(4)]
+    distList = [[] for i in range(num)]
     for j in range(len(pts)):
         mini = 50000
         for i in range(corners.shape[0]):

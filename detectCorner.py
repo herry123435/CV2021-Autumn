@@ -2,6 +2,7 @@ import cv2
 from matplotlib.pyplot import contour
 import utils
 import numpy as np
+from enum import Enum
 
 BODY = 0
 RIGHT_BRANCHIAL = 1
@@ -12,6 +13,17 @@ RIGHT_THIGH = 5
 RIGHT_CALF = 6
 LEFT_THIGH = 7
 LEFT_CALF = 8
+
+class BodyParts(Enum):
+    BODY = 0
+    RIGHT_BRANCHIAL = 1
+    RIGHT_FOREARM = 2
+    LEFT_BRANCHIAL = 3
+    LEFT_FOREARM = 4
+    RIGHT_THIGH = 5
+    RIGHT_CALF = 6
+    LEFT_THIGH = 7
+    LEFT_CALF = 8
 
 VERT = 1
 HORI = 0
@@ -170,10 +182,16 @@ def imageToSegAndPoints(clothesImg, cGender, humanImg, hGender):
 
 
 def detectCorners(img, name, IDX):
-    contourList, hList = utils.getContourDL(img, 50, "results/temp_contour.jpg")
+    contourList, _ = utils.getContourDL(img, 50, "results/temp_contour.jpg")
     bBox = utils.rectangle(contourList)
-    _, _, pnts = utils.getConvexHullDL(img, contourList, hList)
-    pnts = utils.getExtremitiesDL(bBox)
+    if IDX == BodyParts.RIGHT_BRANCHIAL.value or IDX == BodyParts.LEFT_BRANCHIAL.value:
+        n = 3
+    elif IDX == BodyParts.BODY.value:
+        # TODO: skip and gather at end
+        n = 4
+    else:
+        n = 4
+    pnts = utils.getExtremitiesDL(bBox, n)
     #print(len(pnts))
     if IDX == 0:
         #print(pnts)
@@ -181,10 +199,10 @@ def detectCorners(img, name, IDX):
         sum2 = tuple(map(sum, zip(pnts[1], pnts[2])))
         sum3 = tuple(map(sum, zip(pnts[2], pnts[3])))
         sum4 = tuple(map(sum, zip(pnts[3], pnts[0])))
-        pnts.append(tuple([0.5*i for i in sum1]))     
+        pnts.append(tuple([0.5*i for i in sum1]))
         pnts.append(tuple([0.5*i for i in sum2]))
         pnts.append(tuple([0.5*i for i in sum3]))
-        pnts.append(tuple([0.5*i for i in sum4]))       
+        pnts.append(tuple([0.5*i for i in sum4]))
         #print(pnts)
     #print(len(pnts))
     cImg = cv2.imread(name)

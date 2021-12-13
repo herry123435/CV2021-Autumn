@@ -23,7 +23,7 @@ def warpClothesSegs(segImgs, humanImg, ordered_clothes_points, ordered_pose_poin
     transformType = Transform.ThinPlateSpline   # warping type
     Nb = 1                                      # height of gaussian pyramid
     ###################################################################################
-    
+
     divider = pow(2, Nb)
 
     total_parts_num = 9
@@ -79,28 +79,28 @@ def warpClothesSegs(segImgs, humanImg, ordered_clothes_points, ordered_pose_poin
         for j in range(Nb):
             wc_ge = cv2.pyrDown(wc_ge)
             clothes_gp.append(wc_ge)
-        
+
         # gaussian pyramid for pose
         p_ge = tried_on.copy()
         pose_gp = [p_ge]
         for j in range(Nb):
             p_ge = cv2.pyrDown(p_ge)
             pose_gp.append(p_ge)
-        
+
         # laplacian pyramid for warped clothes
         clothes_lp = [clothes_gp[-1]]
         for j in range(Nb, 0, -1):
             wc_u = cv2.pyrUp(clothes_gp[j])
             wc_le = cv2.subtract(clothes_gp[j-1], wc_u)
             clothes_lp.insert(0, wc_le)
-        
+
         # laplacian pyramid for pose
         pose_lp = [pose_gp[-1]]
         for j in range(Nb, 0, -1):
             p_u = cv2.pyrUp(pose_gp[j])
             p_le = cv2.subtract(pose_gp[j-1], p_u)
             pose_lp.insert(0, p_le)
-        
+
         # combined laplacian pyramid
         combined_lp = []
         for j in range(Nb+1):
@@ -110,7 +110,7 @@ def warpClothesSegs(segImgs, humanImg, ordered_clothes_points, ordered_pose_poin
             for k in range(3):
                 c_e[:, :, k] = resize_clothes_mask[:, :] * clothes_lp[j][:, :, k] + resize_inv_clothes_mask[:, :] * pose_lp[j][:, :, k]
             combined_lp.append(c_e)
-        
+
         # reconstruction
         tried_on = combined_lp[-1]
         for j in range(Nb-1, -1, -1):
@@ -139,10 +139,9 @@ if __name__ == '__main__':
     corners = []
     for i in range(0, 9):
         #print(i)
-        IDX = i
-        fName = f"segImage/clothes_2_seg_{IDX}.png"
+        fName = f"segImage/clothes_2_seg_{i}.png"
         img = cv2.imread(fName)
-        pnts = detectCorners(img, fName, IDX)
+        pnts = detectCorners(img, fName, i)
         for j in pnts:
             if isinstance(j, np.ndarray):
                 #print('array')
