@@ -18,6 +18,9 @@ import sys
 def fm(p, j): #points, joints
     op = np.zeros((39,2))
     
+    p = np.array(p)
+    j = np.array(j)
+    
     p = p.tolist()
     p.sort(key=lambda x:x[1])            # y coordinate value가 작은 것(image에서는 위쪽에 있는 점)이 앞에 오도록 정렬
     
