@@ -2,6 +2,8 @@ from enum import Enum
 import numpy as np
 import cv2
 from detectCorner import detectCorners
+from jointDetection import detectJoint
+from findMatchings import findMatchings
 
 class BodyParts(Enum):
     BODY = 0
@@ -27,7 +29,7 @@ def warpClothesSegs(segImgs, humanImg, ordered_clothes_points, ordered_pose_poin
     divider = pow(2, Nb)
 
     total_parts_num = 9
-    pair_num = [8, 3, 4, 3, 4, 4, 4, 4, 4] # number of pairs for each body part
+    pair_num = [7, 3, 4, 3, 4, 4, 4, 4, 4] # number of pairs for each body part
     matchStartNum = 0
 
     tried_on = humanImg
@@ -135,6 +137,9 @@ if __name__ == '__main__':
     humanDir = 'inputImage'
     humanImg = cv2.imread(os.path.join(humanDir, 'human.jpg'), cv2.IMREAD_COLOR)
 
+    clothesDir = 'inputImage'
+    clothesImg = cv2.imread(os.path.join(humanDir, 'clothes_1.png'), cv2.IMREAD_COLOR)
+
     clothes_points = []
     corners = []
     for i in range(0, 9):
@@ -169,6 +174,18 @@ if __name__ == '__main__':
         corners.extend(pnts)
     print(human_points)
     print(len(human_points))
+
+    clothes_points.insert(6, clothes_points[20])
+    human_points.insert(6, human_points[20])
+
+    print(len(human_points))
+
+    human_joints = detectJoint(humanImg)
+    clothes_joints = detectJoint(clothesImg)
+
+    clothes_points, human_points = findMatchings(clothes_points, clothes_joints, human_points, human_joints)
+
+
 
     '''
     clothes_points = [

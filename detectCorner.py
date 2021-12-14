@@ -186,6 +186,7 @@ def detectCorners(img, name, IDX):
     bBox = utils.rectangle(contourList)
     if IDX == BodyParts.RIGHT_BRANCHIAL.value or IDX == BodyParts.LEFT_BRANCHIAL.value:
         n = 3
+    
     elif IDX == BodyParts.BODY.value:
         # TODO: skip and gather at end
         n = 4
@@ -197,12 +198,12 @@ def detectCorners(img, name, IDX):
         #print(pnts)
         sum1 = tuple(map(sum, zip(pnts[0], pnts[1])))
         sum2 = tuple(map(sum, zip(pnts[1], pnts[2])))
-        sum3 = tuple(map(sum, zip(pnts[2], pnts[3])))
-        sum4 = tuple(map(sum, zip(pnts[3], pnts[0])))
+        #sum3 = tuple(map(sum, zip(pnts[2], pnts[3])))
+        #sum4 = tuple(map(sum, zip(pnts[3], pnts[0])))
         pnts.append(tuple([0.5*i for i in sum1]))
         pnts.append(tuple([0.5*i for i in sum2]))
-        pnts.append(tuple([0.5*i for i in sum3]))
-        pnts.append(tuple([0.5*i for i in sum4]))
+        #pnts.append(tuple([0.5*i for i in sum3]))
+        #pnts.append(tuple([0.5*i for i in sum4]))
         #print(pnts)
     #print(len(pnts))
     cImg = cv2.imread(name)
