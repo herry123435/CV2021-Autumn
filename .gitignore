@@ -1,3 +1,4 @@
 *.prototxt
 *.caffemodel
 __pycache__/*
+*.h5

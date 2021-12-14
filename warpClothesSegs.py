@@ -1,6 +1,7 @@
 from enum import Enum
 import numpy as np
 import cv2
+from detectCorner import detectCorners
 
 class BodyParts(Enum):
     BODY = 0
@@ -22,11 +23,11 @@ def warpClothesSegs(segImgs, humanImg, ordered_clothes_points, ordered_pose_poin
     transformType = Transform.ThinPlateSpline   # warping type
     Nb = 1                                      # height of gaussian pyramid
     ###################################################################################
-    
+
     divider = pow(2, Nb)
 
     total_parts_num = 9
-    pair_num = [8, 4, 4, 4, 4, 4, 4, 4, 4] # number of pairs for each body part
+    pair_num = [8, 3, 4, 3, 4, 4, 4, 4, 4] # number of pairs for each body part
     matchStartNum = 0
 
     tried_on = humanImg
@@ -78,28 +79,28 @@ def warpClothesSegs(segImgs, humanImg, ordered_clothes_points, ordered_pose_poin
         for j in range(Nb):
             wc_ge = cv2.pyrDown(wc_ge)
             clothes_gp.append(wc_ge)
-        
+
         # gaussian pyramid for pose
         p_ge = tried_on.copy()
         pose_gp = [p_ge]
         for j in range(Nb):
             p_ge = cv2.pyrDown(p_ge)
             pose_gp.append(p_ge)
-        
+
         # laplacian pyramid for warped clothes
         clothes_lp = [clothes_gp[-1]]
         for j in range(Nb, 0, -1):
             wc_u = cv2.pyrUp(clothes_gp[j])
             wc_le = cv2.subtract(clothes_gp[j-1], wc_u)
             clothes_lp.insert(0, wc_le)
-        
+
         # laplacian pyramid for pose
         pose_lp = [pose_gp[-1]]
         for j in range(Nb, 0, -1):
             p_u = cv2.pyrUp(pose_gp[j])
             p_le = cv2.subtract(pose_gp[j-1], p_u)
             pose_lp.insert(0, p_le)
-        
+
         # combined laplacian pyramid
         combined_lp = []
         for j in range(Nb+1):
@@ -109,7 +110,7 @@ def warpClothesSegs(segImgs, humanImg, ordered_clothes_points, ordered_pose_poin
             for k in range(3):
                 c_e[:, :, k] = resize_clothes_mask[:, :] * clothes_lp[j][:, :, k] + resize_inv_clothes_mask[:, :] * pose_lp[j][:, :, k]
             combined_lp.append(c_e)
-        
+
         # reconstruction
         tried_on = combined_lp[-1]
         for j in range(Nb-1, -1, -1):
@@ -126,14 +127,50 @@ import os
 
 if __name__ == '__main__':
     segImgs = []
-    clothesSegDir = 'clothesOutput'
+    clothesSegDir = 'segImage'
     for i in range(0,9):
-         img = cv2.imread(os.path.join(clothesSegDir, 'seg_{}_man2.png'.format(i)), cv2.IMREAD_UNCHANGED)
+         img = cv2.imread(os.path.join(clothesSegDir, 'clothes_1_seg_{}.png'.format(i)), cv2.IMREAD_UNCHANGED)
          segImgs.append(np.copy(img))
 
-    humanDir = 'humanInput'
-    humanImg = cv2.imread(os.path.join(humanDir, 'humanPose02.jpg'), cv2.IMREAD_COLOR)
+    humanDir = 'inputImage'
+    humanImg = cv2.imread(os.path.join(humanDir, 'human.jpg'), cv2.IMREAD_COLOR)
 
+    clothes_points = []
+    corners = []
+    for i in range(0, 9):
+        #print(i)
+        fName = f"segImage/clothes_1_seg_{i}.png"
+        img = cv2.imread(fName)
+        pnts = detectCorners(img, fName, i)
+        for j in pnts:
+            if isinstance(j, np.ndarray):
+                #print('array')
+                (a, b) = j
+                j = (a, b)
+            clothes_points.append(j)
+        corners.extend(pnts)
+    print(clothes_points)
+    print(len(clothes_points))
+
+    human_points = []
+    corners = []
+    for i in range(0, 9):
+        #print(i)
+        IDX = i
+        fName = f"segImage/human_seg_{IDX}.png"
+        img = cv2.imread(fName)
+        pnts = detectCorners(img, fName, IDX)
+        for j in pnts:
+            if isinstance(j, np.ndarray):
+                #print('array')
+                (a, b) = j
+                j = (a, b)
+            human_points.append(j)
+        corners.extend(pnts)
+    print(human_points)
+    print(len(human_points))
+
+    '''
     clothes_points = [
         # BODY
         (364, 220),
@@ -237,7 +274,7 @@ if __name__ == '__main__':
         (309, 769),
         (290, 767),
     ]
-
+    '''
     tried_on = warpClothesSegs(segImgs, humanImg, clothes_points, human_points)
 
     cv2.imshow('tried_on', tried_on)
